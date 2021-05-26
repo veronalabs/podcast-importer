@@ -19,36 +19,36 @@ if (!defined('WPINC')) {
 /**
  * Current plugin version.
  */
-define('PODCAST_IMPORTER_SECONDLINE_VERSION', '1.0.0');
+define('PODCAST_IMPORTER_VERSION', '1.0.0');
 
 /**
  * The code that runs during plugin activation.
- * This action is documented in includes/class-podcast-importer-secondline-activator.php
+ * This action is documented in includes/class-podcast-importer-activator.php
  */
-function activate_podcast_importer_secondline()
+function activate_podcast_importer()
 {
-    require_once plugin_dir_path(__FILE__) . 'includes/class-podcast-importer-secondline-activator.php';
-    Podcast_Importer_Secondline_Activator::activate();
+    require_once plugin_dir_path(__FILE__) . 'includes/class-podcast-importer-activator.php';
+    Podcast_Importer_Activator::activate();
 }
 
 /**
  * The code that runs during plugin deactivation.
- * This action is documented in includes/class-podcast-importer-secondline-deactivator.php
+ * This action is documented in includes/class-podcast-importer-deactivator.php
  */
-function deactivate_podcast_importer_secondline()
+function deactivate_podcast_importer()
 {
-    require_once plugin_dir_path(__FILE__) . 'includes/class-podcast-importer-secondline-deactivator.php';
-    Podcast_Importer_Secondline_Deactivator::deactivate();
+    require_once plugin_dir_path(__FILE__) . 'includes/class-podcast-importer-deactivator.php';
+    Podcast_Importer_Deactivator::deactivate();
 }
 
-register_activation_hook(__FILE__, 'activate_podcast_importer_secondline');
-register_deactivation_hook(__FILE__, 'deactivate_podcast_importer_secondline');
+register_activation_hook(__FILE__, 'activate_podcast_importer');
+register_deactivation_hook(__FILE__, 'deactivate_podcast_importer');
 
 
 /**
  * Allow iframes in generated post content
  */
-function podcast_importer_secondline_allow_iframe($tags, $context)
+function podcast_importer_allow_iframe($tags, $context)
 {
     if ('post' === $context) {
         $tags['iframe'] = array(
@@ -65,62 +65,36 @@ function podcast_importer_secondline_allow_iframe($tags, $context)
     return $tags;
 }
 
-add_filter('wp_kses_allowed_html', 'podcast_importer_secondline_allow_iframe', 10, 2);
+add_filter('wp_kses_allowed_html', 'podcast_importer_allow_iframe', 10, 2);
 
 /**
  * Add oEmbed providers
  */
-function podcast_importer_secondline_oembed_providers($providers)
+function podcast_importer_oembed_providers($providers)
 {
     $providers['#https?://(.+).podbean.com/e/.+#i'] = array('https://api.podbean.com/v1/oembed', true);
     return $providers;
 }
 
-add_filter('oembed_providers', 'podcast_importer_secondline_oembed_providers');
-
-
-/**
- * Display dismissable admin notices
- */
-if (!class_exists('PAnD')) {
-    require_once plugin_dir_path(__FILE__) . 'includes/dismiss-notices/dismiss-notices.php';
-}
-
-function secondline_pis_notice()
-{
-    if (!function_exists('secondline_themes_setup')) {
-        if (!PAnD::is_admin_notice_active('disable-import-notice-120')) {
-            return;
-        }
-        ?>
-        <div data-dismissible="disable-import-notice-120" class="notice notice-info is-dismissible">
-            <p><?php esc_html_e('Power up your Podcast Website with a dedicated', 'secondline-pis-custom-buttons'); ?> <a href="https://secondlinethemes.com/themes/?utm_source=import-plugin-notice" target="_blank"><?php esc_html_e('Podcast Theme.', 'secondline-pis-custom-buttons'); ?></a> <?php esc_html_e('Brought to you by the creators of the Podcast Importer plugin!', 'secondline-pis-custom-buttons'); ?></p>
-        </div>
-        <?php
-    }
-}
-
-add_action('admin_notices', 'secondline_pis_notice');
-add_action('admin_init', array('PAnD', 'init'));
-
+add_filter('oembed_providers', 'podcast_importer_oembed_providers');
 
 /* Add 'Setting' link to plugins page */
-function secondline_pis_add_settings_link($links)
+function podcast_importer_add_settings_link($links)
 {
-    $settings_link = '<a href="tools.php?page=secondlinepodcastimport">' . esc_attr__('Settings', 'secondline-pis-custom-buttons') . '</a>';
+    $settings_link = '<a href="tools.php?page=podcast-imprter">' . esc_attr__('Settings', 'podcast-importer') . '</a>';
     array_push($links, $settings_link);
     return $links;
 }
 
 $plugin = plugin_basename(__FILE__);
-add_filter("plugin_action_links_$plugin", 'secondline_pis_add_settings_link');
+add_filter("plugin_action_links_$plugin", 'podcast_importer_add_settings_link');
 
 
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks
  */
-require plugin_dir_path(__FILE__) . 'class-secondline-podcast-import.php';
+require plugin_dir_path(__FILE__) . 'class-podcast-importer.php';
 
 /**
  * Begins execution of the plugin.
@@ -133,9 +107,9 @@ require plugin_dir_path(__FILE__) . 'class-secondline-podcast-import.php';
  */
 
 
-function run_podcast_importer_secondline()
+function podcast_importer()
 {
-    $plugin = new Podcast_Importer_Secondline();
+    new Podcast_Importer();
 }
 
-run_podcast_importer_secondline();
+podcast_importer();

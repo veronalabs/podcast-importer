@@ -21,12 +21,12 @@
   });
 }())
 
-jQuery(document).ready(function($) {
-	'use strict';
-  $( ".settings-wrapper" ).each(function() {
-    var $heading = $( this ).find("h3");
-    var $wrapper = $( this );
-    $heading.click(function() {
+jQuery(document).ready(function ($) {
+  'use strict';
+  $(".settings-wrapper").each(function () {
+    var $heading = $(this).find("h3");
+    var $wrapper = $(this);
+    $heading.click(function () {
       $wrapper.toggleClass("expanded")
     });
   });
