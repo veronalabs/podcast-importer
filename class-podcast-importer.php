@@ -563,6 +563,7 @@ class Podcast_Importer
                             add_post_meta($post_id, 'podcast_enclosure', $audio_url, true);
                             add_post_meta($post_id, 'podcast_author', $this->sanitize_data($itunes->author), true);
                             add_post_meta($post_id, 'podcast_publish_date', $post_date, true);
+                            add_post_meta($post_id, '_castpress_audio_url', $audio_url, true);
 
                             // Add episode categories
                             if (!empty($podcast_importer_category)) {
