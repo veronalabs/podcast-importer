@@ -466,10 +466,10 @@ class Podcast_Importer
                     }
 
                     // Set up audio as a shortcode and remove query variables
-                    $audio_url                        = (string)$item->enclosure['url'];
-                    $audio_url                        = preg_replace('/(?s:.*)(https?:\/\/(?:[\w\-\.]+[^#?\s]+)(?:\.mp3))(?s:.*)/', '$1', $audio_url);
-                    $audio_url                        = preg_replace('/(?s:.*)(https?:\/\/(?:[\w\-\.]+[^#?\s]+)(?:\.m4a))(?s:.*)/', '$1', $audio_url);
-                    $feed_link_url                    = (string)$item->link;
+                    $audio_url             = (string)$item->enclosure['url'];
+                    $audio_url             = preg_replace('/(?s:.*)(https?:\/\/(?:[\w\-\.]+[^#?\s]+)(?:\.mp3))(?s:.*)/', '$1', $audio_url);
+                    $audio_url             = preg_replace('/(?s:.*)(https?:\/\/(?:[\w\-\.]+[^#?\s]+)(?:\.m4a))(?s:.*)/', '$1', $audio_url);
+                    $feed_link_url         = (string)$item->link;
                     $host_checker          = false;
                     $match_image_filenames = $this->match_image_names($podcast_importer_rss_feed_url);
                     if (!empty($feed_link_url)) {
@@ -554,7 +554,6 @@ class Podcast_Importer
                             add_post_meta($post_id, 'podcast_importer_imported_guid', $guid, true);
                             add_post_meta($post_id, 'podcast_importer_episode_number', $episode_number, true);
                             add_post_meta($post_id, 'podcast_importer_season_number', $season_number, true);
-                            add_post_meta($post_id, 'podcast_importer_external_embed', $audio_shortcode, true);
                             add_post_meta($post_id, 'podcast_importer_external_embed', $audio_shortcode, true);
                             add_post_meta($post_id, 'podcast_audio_file', $audio_url, true);
                             add_post_meta($post_id, 'podcast_audio_url', $audio_url, true);
@@ -786,10 +785,10 @@ class Podcast_Importer
                         }
 
                         // Set up audio as a shortcode and remove query variables
-                        $audio_url                        = (string)$item->enclosure['url'];
-                        $audio_url                        = preg_replace('/(?s:.*)(https?:\/\/(?:[\w\-\.]+[^#?\s]+)(?:\.mp3))(?s:.*)/', '$1', $audio_url);
-                        $audio_url                        = preg_replace('/(?s:.*)(https?:\/\/(?:[\w\-\.]+[^#?\s]+)(?:\.m4a))(?s:.*)/', '$1', $audio_url);
-                        $feed_link_url                    = (string)$item->link;
+                        $audio_url             = (string)$item->enclosure['url'];
+                        $audio_url             = preg_replace('/(?s:.*)(https?:\/\/(?:[\w\-\.]+[^#?\s]+)(?:\.mp3))(?s:.*)/', '$1', $audio_url);
+                        $audio_url             = preg_replace('/(?s:.*)(https?:\/\/(?:[\w\-\.]+[^#?\s]+)(?:\.m4a))(?s:.*)/', '$1', $audio_url);
+                        $feed_link_url         = (string)$item->link;
                         $host_checker          = false;
                         $match_image_filenames = $this->match_image_names($podcast_importer_rss_feed_url);
                         if (!empty($feed_link_url)) {
@@ -869,34 +868,17 @@ class Podcast_Importer
 
                                 // Add GUID for each post
                                 add_post_meta($post_id, 'podcast_importer_imported_guid', $guid, true);
-
-                                // Import Episode Number and Season Number
-                                if (isset($episode_number) && $episode_number !== '') {
-                                    add_post_meta($post_id, 'podcast_importer_episode_number', $episode_number, true);
-                                }
-                                if (isset($season_number) && $season_number !== '') {
-                                    add_post_meta($post_id, 'podcast_importer_season_number', $season_number, true);
-                                }
-
-                                // Add embed audio player
-                                if ($podcast_importer_embed_player == 'on' && $host_checker) {
-                                    add_post_meta($post_id, 'podcast_importer_external_embed', $audio_shortcode, true);
-                                } else {
-                                    // Custom Field - Seriously Simple Podcsating
-                                    if (function_exists('ssp_episodes')) {
-                                        add_post_meta($post_id, 'audio_file', $audio_url, true);
-                                        add_post_meta($post_id, 'duration', $duration, true);
-                                        add_post_meta($post_id, 'filesize', $filesize, true);
-                                    }
-                                    // Custom Field - PowerPress
-                                    if (function_exists('powerpress_get_enclosure_data')) {
-                                        add_post_meta($post_id, 'enclosure', $audio_url, true);
-                                    }
-                                    // Custom Field - Simple Podcast Press
-                                    if (function_exists('spp_sl_sppress_plugin_updater')) {
-                                        add_post_meta($post_id, '_audiourl', $audio_url, true);
-                                    }
-                                }
+                                add_post_meta($post_id, 'podcast_importer_episode_number', $episode_number, true);
+                                add_post_meta($post_id, 'podcast_importer_season_number', $season_number, true);
+                                add_post_meta($post_id, 'podcast_importer_external_embed', $audio_shortcode, true);
+                                add_post_meta($post_id, 'podcast_audio_file', $audio_url, true);
+                                add_post_meta($post_id, 'podcast_audio_url', $audio_url, true);
+                                add_post_meta($post_id, 'podcast_duration', $duration, true);
+                                add_post_meta($post_id, 'podcast_filesize', $filesize, true);
+                                add_post_meta($post_id, 'podcast_enclosure', $audio_url, true);
+                                add_post_meta($post_id, 'podcast_author', $this->sanitize_data($itunes->author), true);
+                                add_post_meta($post_id, 'podcast_publish_date', $post_date, true);
+                                add_post_meta($post_id, '_castpress_audio_url', $audio_url, true);
 
                                 // Add episode categories
                                 if (!empty($podcast_importer_category)) {
@@ -1011,12 +993,12 @@ class Podcast_Importer
     {
         if (strpos($parsed_feed_host, 'transistor.fm') !== false) {
 
-            $fixed_share_url            = str_replace('/s/', '/e/', $embed_url);
+            $fixed_share_url = str_replace('/s/', '/e/', $embed_url);
             $audio_shortcode = '<iframe src="' . esc_url($fixed_share_url) . '" width="100%" height="180" frameborder="0" scrolling="no" seamless="true" style="width:100%; height:180px;"></iframe>';
 
         } elseif (strpos($parsed_feed_host, 'anchor.fm') !== false) {
 
-            $fixed_share_url            = str_replace('/episodes/', '/embed/episodes/', $embed_url);
+            $fixed_share_url = str_replace('/episodes/', '/embed/episodes/', $embed_url);
             $audio_shortcode = '<iframe src="' . esc_url($fixed_share_url) . '" height="180px" width="100%" frameborder="0" scrolling="no" style="width:100%; height:180px;"></iframe>';
 
         } elseif (strpos($parsed_feed_host, 'simplecast.com') !== false) {
@@ -1025,14 +1007,14 @@ class Podcast_Importer
             $simplecast_json     = json_decode($simplecast_response['body'], true);
             $simplecast_html     = $simplecast_json['html'];
             preg_match('/src="([^"]+)"/', $simplecast_html, $match);
-            $fixed_share_url            = $match[1];
+            $fixed_share_url = $match[1];
             $audio_shortcode = '<iframe src="' . esc_url($fixed_share_url) . '" height="200px" width="100%" frameborder="no" scrolling="no" style="width:100%; height:200px;"></iframe>';
 
         } elseif (strpos($parsed_feed_host, 'whooshkaa.com') !== false) {
 
-            $whooshkaa_audio_id         = substr($embed_url, strpos($embed_url, "?id=") + 4);
-            $fixed_share_url            = 'https://webplayer.whooshkaa.com/player/episode/id/' . $whooshkaa_audio_id . '?theme=light';
-            $audio_shortcode = '<iframe src="' . esc_url($fixed_share_url) . '" width="100%" height="200" frameborder="0" scrolling="no" style="width: 100%; height: 200px"></iframe>';
+            $whooshkaa_audio_id = substr($embed_url, strpos($embed_url, "?id=") + 4);
+            $fixed_share_url    = 'https://webplayer.whooshkaa.com/player/episode/id/' . $whooshkaa_audio_id . '?theme=light';
+            $audio_shortcode    = '<iframe src="' . esc_url($fixed_share_url) . '" width="100%" height="200" frameborder="0" scrolling="no" style="width: 100%; height: 200px"></iframe>';
 
         } elseif ((strpos($rss_feed_url, 'omny.fm') !== false) || (strpos($rss_feed_url, 'omnycontent.com') !== false)) {
 
@@ -1043,33 +1025,33 @@ class Podcast_Importer
             $audio_shortcode = wp_oembed_get(esc_url($embed_url)); // oEmbed
 
         } elseif (strpos($rss_feed_url, 'megaphone.fm') !== false) {
-            $megaphone_audio_link       = explode('megaphone.fm/', $audio_url);
-            $megaphone_audio_id         = explode('.', $megaphone_audio_link[1]);
-            $fixed_share_url            = 'https://playlist.megaphone.fm/?e=' . $megaphone_audio_id[0];
-            $audio_shortcode = '<iframe src="' . esc_url($fixed_share_url) . '" width="100%" height="210" scrolling="no"  frameborder="0" style="width: 100%; height: 210px"></iframe>';
+            $megaphone_audio_link = explode('megaphone.fm/', $audio_url);
+            $megaphone_audio_id   = explode('.', $megaphone_audio_link[1]);
+            $fixed_share_url      = 'https://playlist.megaphone.fm/?e=' . $megaphone_audio_id[0];
+            $audio_shortcode      = '<iframe src="' . esc_url($fixed_share_url) . '" width="100%" height="210" scrolling="no"  frameborder="0" style="width: 100%; height: 210px"></iframe>';
 
         } elseif (strpos($rss_feed_url, 'captivate.fm') !== false) {
-            $captivate_audio_link       = explode('media/', $audio_url);
-            $captivate_audio_id         = explode('/', $captivate_audio_link[1]);
-            $fixed_share_url            = 'https://player.captivate.fm/episode/' . $captivate_audio_id[0];
-            $audio_shortcode = '<iframe src="' . esc_url($fixed_share_url) . '" width="100%" height="170" scrolling="no"  frameborder="0" style="width: 100%; height: 170px"></iframe>';
+            $captivate_audio_link = explode('media/', $audio_url);
+            $captivate_audio_id   = explode('/', $captivate_audio_link[1]);
+            $fixed_share_url      = 'https://player.captivate.fm/episode/' . $captivate_audio_id[0];
+            $audio_shortcode      = '<iframe src="' . esc_url($fixed_share_url) . '" width="100%" height="170" scrolling="no"  frameborder="0" style="width: 100%; height: 170px"></iframe>';
 
         } elseif (strpos($audio_url, 'buzzsprout.com') !== false) {
-            $buzzsprout_audio_url       = explode('.mp3', $audio_url);
-            $fixed_share_url            = $buzzsprout_audio_url[0] . '?iframe=true';
-            $audio_shortcode = '<iframe src="' . esc_url($fixed_share_url) . '" scrolling="no" width="100%" scrolling="no"  height="200" frameborder="0" style="width: 100%; height: 200px"></iframe>';
+            $buzzsprout_audio_url = explode('.mp3', $audio_url);
+            $fixed_share_url      = $buzzsprout_audio_url[0] . '?iframe=true';
+            $audio_shortcode      = '<iframe src="' . esc_url($fixed_share_url) . '" scrolling="no" width="100%" scrolling="no"  height="200" frameborder="0" style="width: 100%; height: 200px"></iframe>';
 
         } elseif (strpos($audio_url, 'pinecast.com') !== false) {
-            $pinecast_audio_url         = explode('.mp3', $audio_url);
-            $pinecast_episode_url       = str_replace('/listen/', '/player/', $pinecast_audio_url[0]);
-            $fixed_share_url            = $pinecast_episode_url . '?theme=flat';
-            $audio_shortcode = '<iframe src="' . esc_url($fixed_share_url) . '" scrolling="no" width="100%" scrolling="no"  height="200" frameborder="0" style="width: 100%; height: 200px"></iframe>';
+            $pinecast_audio_url   = explode('.mp3', $audio_url);
+            $pinecast_episode_url = str_replace('/listen/', '/player/', $pinecast_audio_url[0]);
+            $fixed_share_url      = $pinecast_episode_url . '?theme=flat';
+            $audio_shortcode      = '<iframe src="' . esc_url($fixed_share_url) . '" scrolling="no" width="100%" scrolling="no"  height="200" frameborder="0" style="width: 100%; height: 200px"></iframe>';
 
         } elseif (strpos($rss_feed_url, 'feed.ausha.co') !== false) {
-            $ausha_audio_link           = explode('audio.ausha.co/', $audio_url);
-            $ausha_audio_id             = explode('.mp3', $ausha_audio_link[1]);
-            $podcastId                  = $ausha_audio_id[0];
-            $audio_shortcode = '<iframe frameborder="0" height="200px" scrolling="no"  width="100%" src="https://widget.ausha.co/index.html?podcastId=' . $podcastId . '&amp;display=horizontal&amp;v=2"></iframe>';
+            $ausha_audio_link = explode('audio.ausha.co/', $audio_url);
+            $ausha_audio_id   = explode('.mp3', $ausha_audio_link[1]);
+            $podcastId        = $ausha_audio_id[0];
+            $audio_shortcode  = '<iframe frameborder="0" height="200px" scrolling="no"  width="100%" src="https://widget.ausha.co/index.html?podcastId=' . $podcastId . '&amp;display=horizontal&amp;v=2"></iframe>';
 
         } elseif (strpos($rss_feed_url, 'spreaker.com') !== false) {
             $fixed_share_url = explode('/episode/', $guid);
@@ -1086,7 +1068,7 @@ class Podcast_Importer
             $audio_shortcode = '<iframe frameborder="0" height="90" scrolling="no" width="100%" src="https://html5-player.libsyn.com/embed/episode/id/' . $embed_url . '" ></iframe>';
 
         } elseif (strpos($rss_feed_url, 'audioboom.com') !== false) {
-            $fixed_share_url            = str_replace('/posts/', '/boos/', $embed_url);
+            $fixed_share_url = str_replace('/posts/', '/boos/', $embed_url);
             $audio_shortcode = '<iframe frameborder="0" height="220" scrolling="no" width="100%" src="' . $fixed_share_url . '/embed/v4"></iframe>';
 
         } else {
@@ -1135,5 +1117,3 @@ class Podcast_Importer
     }
 
 }
-
-; ?>
