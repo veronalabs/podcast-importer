@@ -22,7 +22,7 @@ h2.slt-importer-header{margin:0 0 40px 0}
 .wp-core-ui .slt-plugin-container .button-link-edit{top:1px;float:right;position:relative}
 span.slt-existing-post-notice{font-style:italic;font-size:11px}
 span.slt-importer-notice{margin:-30px 0 40px 0;display:block;font-style:italic}
-.tools_page_secondlinepodcastimport.wp-core-ui .notice.is-dismissible{padding-right:0;margin:12px 20px 12px 0}
+.tools_page_podcastimport.wp-core-ui .notice.is-dismissible{padding-right:0;margin:12px 20px 12px 0}
 .advanced-settings-wrapper,.edit-import-form{max-height:0;overflow:hidden;transition:.3s max-height}
 .edit-import-form.expanded,.expanded .advanced-settings-wrapper{max-height:9999px}
 .slt-importer-header.advanced-options{margin-top:2em;cursor:pointer}

@@ -7,10 +7,18 @@ if (!defined('ABSPATH')) {
 // Main importer class
 class Podcast_Importer
 {
+    /**
+     * The single instance of the class.
+     *
+     * @var Podcast_Importer
+     */
+    protected static $_instance = null;
 
+    /**
+     * Podcast_Importer constructor.
+     */
     public function __construct()
     {
-
         // Hook for importer cron job
         add_action('podcast_importer_cron', array($this, 'scheduled_podcast_import'));
         if (!wp_next_scheduled('podcast_importer_cron')) {
@@ -23,11 +31,21 @@ class Podcast_Importer
             add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
             add_action('admin_init', array($this, 'init'));
         }
+    }
 
+    /**
+     * Instance of the class.
+     */
+    public static function instance()
+    {
+        if (is_null(self::$_instance)) {
+            self::$_instance = new self();
+        }
+        return self::$_instance;
     }
 
     // Load text domain & register custom post type
-    function init()
+    public function init()
     {
         load_plugin_textdomain('podcast-importer', false, dirname(plugin_basename(__FILE__)) . '/languages');
 
@@ -51,13 +69,13 @@ class Podcast_Importer
     }
 
     // Add a new menu link under Tools
-    function add_page()
+    public function add_page()
     {
         add_management_page(esc_attr__('Podcast Importer', 'podcast-importer'), esc_attr__('Podcast Importer', 'podcast-importer'), 'manage_options', 'podcast-imprter', array($this, 'front_init'));
     }
 
     // Load admin scripts
-    function admin_scripts()
+    public function admin_scripts()
     {
         wp_register_style('podcast_importer_admin_styles', esc_url(plugins_url('/assets/css/admin.css', __FILE__)), false, '1.0.0');
         wp_enqueue_style('podcast_importer_admin_styles');
@@ -66,10 +84,11 @@ class Podcast_Importer
         wp_enqueue_script('podcast_importer_admin_scripts');
     }
 
-    function settings_form($post_id_to_update = false)
-    { ?><?php if ($post_id_to_update) :
-        $post_meta = get_post_meta($post_id_to_update);
-    endif; ?>
+    public function settings_form($post_id_to_update = false)
+    {
+        if ($post_id_to_update) :
+            $post_meta = get_post_meta($post_id_to_update);
+        endif; ?>
 
         <form method="POST" action="" class="podcast_importer_form">
             <label for="<?php echo esc_attr($post_id_to_update); ?>_podcast_feed" class="slt-form-label"><?php echo esc_html__('Podcast Feed URL', 'podcast-importer'); ?></label>
@@ -178,7 +197,7 @@ class Podcast_Importer
     <?php }
 
     // Main plugin page within the WordPress admin panel
-    function front_init()
+    public function front_init()
     {
         ?>
         <div class="slt-plugin-container">
@@ -253,7 +272,7 @@ class Podcast_Importer
         <?php endif; ?><?php
     }
 
-    function update($post_id_to_update)
+    public function update($post_id_to_update)
     {
         if (!isset($_POST['podcast_feed']) || $_POST['podcast_feed'] == '') {
             echo "Must define podcast feed.";
@@ -333,7 +352,7 @@ class Podcast_Importer
     }
 
     // Main import function
-    function podcast_import()
+    public function podcast_import()
     {
 
         // Check nonce and user capabilities

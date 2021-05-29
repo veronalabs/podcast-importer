@@ -105,8 +105,6 @@ require plugin_dir_path(__FILE__) . 'class-podcast-importer.php';
  *
  * @since    1.0.0
  */
-
-
 function podcast_importer()
 {
     new Podcast_Importer();
