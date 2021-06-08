@@ -297,7 +297,7 @@ class Podcast_Importer
             update_post_meta($post_id_to_update, 'podcast_importer_publish', $podcast_importer_publish);
         }
         if (isset($_POST['post_category_select'])) {
-            $podcast_importer_category = $_POST['post_category_select'];
+            $podcast_importer_category = array_map('sanitize_text_field', $_POST['post_category_select']);
 
             update_post_meta($post_id_to_update, 'podcast_importer_category', $podcast_importer_category);
         }
@@ -386,21 +386,15 @@ class Podcast_Importer
                 $podcast_importer_rss_feed_url = esc_url($_POST['podcast_feed'], array('http', 'https'));
                 $podcast_importer_rss_feed     = @simplexml_load_file($podcast_importer_rss_feed_url);
                 if (empty($podcast_importer_rss_feed) && !empty($podcast_importer_rss_feed_url)) {
-
-                    $ch = curl_init($podcast_importer_rss_feed_url);
-
-                    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:17.0) Gecko/20100101 Firefox/17.0');
-
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                    $result = curl_exec($ch);
+                    $response = wp_remote_get($podcast_importer_rss_feed_url, [
+                        'user-agent' => 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:17.0) Gecko/20100101 Firefox/17.0',
+                    ]);
+                    $result   = wp_remote_retrieve_body($response);
                     if (substr($result, 0, 5) == "<?xml") {
                         $podcast_importer_rss_feed = simplexml_load_string($result);
                     } else {
                         // Feed is not valid, continue and display error below.
                     }
-                    curl_close($ch);
-
                 }
             }
             if (isset($_POST['post_type_select'])) {
@@ -410,7 +404,7 @@ class Podcast_Importer
                 $podcast_importer_publish = sanitize_text_field($_POST['publish_option_select']);
             }
             if (isset($_POST['post_category_select'])) {
-                $podcast_importer_category = $_POST['post_category_select'];
+                $podcast_importer_category = array_map('sanitize_text_field', $_POST['post_category_select']);
             }
             if (isset($_POST['podcast_importer_author'])) {
                 $podcast_importer_author = sanitize_text_field($_POST['podcast_importer_author']);
@@ -737,21 +731,15 @@ class Podcast_Importer
 
                 $podcast_importer_rss_feed = @simplexml_load_file($podcast_importer_rss_feed_url);
                 if (empty($podcast_importer_rss_feed) && !empty($podcast_importer_rss_feed_url)) {
-
-                    $ch = curl_init($podcast_importer_rss_feed_url);
-
-                    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:17.0) Gecko/20100101 Firefox/17.0');
-
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                    $result = curl_exec($ch);
+                    $response = wp_remote_get($podcast_importer_rss_feed_url, [
+                        'user-agent' => 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:17.0) Gecko/20100101 Firefox/17.0',
+                    ]);
+                    $result   = wp_remote_retrieve_body($response);
                     if (substr($result, 0, 5) == "<?xml") {
                         $podcast_importer_rss_feed = simplexml_load_string($result);
                     } else {
                         // Feed is not valid, continue and display error below.
                     }
-                    curl_close($ch);
-
                 }
 
                 // Parse the RSS/XML feed
