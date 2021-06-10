@@ -1058,12 +1058,14 @@ class Podcast_Importer
             $ausha_audio_link = explode('audio.ausha.co/', $audio_url);
             $ausha_audio_id   = explode('.mp3', $ausha_audio_link[1]);
             $podcastId        = $ausha_audio_id[0];
-            $audio_shortcode  = '<iframe frameborder="0" height="200px" scrolling="no"  width="100%" src="https://widget.ausha.co/index.html?podcastId=' . $podcastId . '&amp;display=horizontal&amp;v=2"></iframe>';
+            $fixed_share_url  = 'https://widget.ausha.co/index.html?podcastId=' . $podcastId . '&display=horizontal&v=2';
+            $audio_shortcode  = '<iframe frameborder="0" height="200px" scrolling="no"  width="100%" src="' . esc_url($fixed_share_url) . '"></iframe>';
 
         } elseif (strpos($rss_feed_url, 'spreaker.com') !== false) {
             $fixed_share_url = explode('/episode/', $guid);
             if (isset($fixed_share_url[1])) {
-                $audio_shortcode = '<iframe frameborder="0" height="200" scrolling="no" width="100%" src="https://widget.spreaker.com/player?episode_id=' . $fixed_share_url[1] . '"></iframe>';
+                $fixed_share_url = 'https://widget.spreaker.com/player?episode_id=' . $fixed_share_url[1];
+                $audio_shortcode = '<iframe frameborder="0" height="200" scrolling="no" width="100%" src="' . esc_url($fixed_share_url) . '"></iframe>';
             } else {
                 $audio_shortcode = '[audio src="' . esc_url($audio_url) . '"][/audio]';
             }
@@ -1072,11 +1074,12 @@ class Podcast_Importer
             $audio_shortcode = $embed_url . '</iframe>';
 
         } elseif (strpos($rss_feed_url, 'libsyn.com') !== false) {
-            $audio_shortcode = '<iframe frameborder="0" height="90" scrolling="no" width="100%" src="https://html5-player.libsyn.com/embed/episode/id/' . $embed_url . '" ></iframe>';
+            $fixed_share_url = 'https://html5-player.libsyn.com/embed/episode/id/' . $embed_url;
+            $audio_shortcode = '<iframe frameborder="0" height="90" scrolling="no" width="100%" src="' . esc_url($fixed_share_url) . '" ></iframe>';
 
         } elseif (strpos($rss_feed_url, 'audioboom.com') !== false) {
             $fixed_share_url = str_replace('/posts/', '/boos/', $embed_url);
-            $audio_shortcode = '<iframe frameborder="0" height="220" scrolling="no" width="100%" src="' . $fixed_share_url . '/embed/v4"></iframe>';
+            $audio_shortcode = '<iframe frameborder="0" height="220" scrolling="no" width="100%" src="' . esc_url($fixed_share_url) . '/embed/v4"></iframe>';
 
         } else {
 
