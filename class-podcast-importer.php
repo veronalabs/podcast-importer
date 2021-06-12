@@ -971,7 +971,7 @@ class Podcast_Importer
 
         foreach ($cpts as $cpt) {
             $selected = $value === $cpt ? ' selected' : '';
-            echo '<option' . $selected . ' value="' . $cpt . '">' . $cpt . '</option>';
+            echo '<option' . esc_attr($selected) . ' value="' . esc_attr($cpt) . '">' . esc_html($cpt) . '</option>';
         }
     }
 
@@ -991,7 +991,7 @@ class Podcast_Importer
             } else {
                 $selected = '';
             }
-            echo '<option' . $selected . ' value="' . $cat->term_id . '">' . $cat->name . '</option>';
+            echo '<option' . esc_attr($selected) . ' value="' . esc_attr($cat->term_id) . '">' . esc_html($cat->name) . '</option>';
         }
     }
 
