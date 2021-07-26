@@ -1,0 +1,52 @@
+<?php
+
+namespace WP_PODCAST_IMPORTER\config;
+class i18n
+{
+
+    /**
+     * Get name of text domain in this plugin
+     * @var string
+     */
+    public $text_domain;
+
+    /**
+     * i18n constructor.
+     * @param $text_domain
+     */
+    public function __construct($text_domain)
+    {
+
+        /*
+         * Check Use i18n in Plugin
+         */
+        if (\WP_PODCAST_IMPORTER::$use_i18n === false) {
+            return;
+        }
+
+        /*
+         * Set Text Domain name
+         */
+        $this->text_domain = $text_domain;
+
+        /*
+         * Load Plugin Text Domain
+         */
+        add_action('init', array($this, 'i18n'));
+    }
+
+    /**
+     * Loads translation file.
+     *
+     * Accessible to other classes to load different language files (admin and
+     * front-end for example).
+     *
+     * @wp-hook init
+     * @return  void
+     */
+    public function i18n()
+    {
+        load_plugin_textdomain($this->text_domain, false, wp_normalize_path(\WP_PODCAST_IMPORTER::$plugin_path . '/languages'));
+    }
+
+}
