@@ -6,6 +6,8 @@ class Process
 {
     public static function run()
     {
+        global $wpdb;
+
         // Init Number Added Post
         $posts_added_count = 0;
 
