@@ -20,7 +20,6 @@ class Process
         $podcast_importer_publish = 'publish';
         $podcast_importer_author = 'admin';
         $podcast_importer_category = '';
-        $podcast_importer_continuous = 'off';
         $podcast_importer_images = 'off';
         $podcast_importer_episode_number = 'off';
         $podcast_importer_content_tag = 'content:encoded';
