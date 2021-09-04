@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       Podcast Importer
- * Description:       A simple podcast import plugin with ongoing podcast feed import features.
- * Version:           1.0.0
+ * Description:       A simple podcast import plugin with feed.
+ * Version:           2.0
  * Author:            VeronaLabs
  * Author URI:        https://veronalabs.com
  * License:           GPL-2.0+
@@ -11,103 +11,237 @@
  * Domain Path:       /languages
  */
 
-// If this file is called directly, abort.
-if (!defined('WPINC')) {
-    die;
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
 }
 
-/**
- * Current plugin version.
- */
-define('PODCAST_IMPORTER_VERSION', '1.0.0');
-
-/**
- * The code that runs during plugin activation.
- * This action is documented in includes/class-podcast-importer-activator.php
- */
-function activate_podcast_importer()
+class WP_PODCAST_IMPORTER
 {
-    require_once plugin_dir_path(__FILE__) . 'includes/class-podcast-importer-activator.php';
-    Podcast_Importer_Activator::activate();
-}
+    /**
+     * Minimum PHP version required
+     *
+     * @var string
+     */
+    private $min_php = '5.4.0';
 
-/**
- * The code that runs during plugin deactivation.
- * This action is documented in includes/class-podcast-importer-deactivator.php
- */
-function deactivate_podcast_importer()
-{
-    require_once plugin_dir_path(__FILE__) . 'includes/class-podcast-importer-deactivator.php';
-    Podcast_Importer_Deactivator::deactivate();
-}
+    /**
+     * Use plugin's translated strings
+     *
+     * @var string
+     * @default true
+     */
+    public static $use_i18n = true;
 
-register_activation_hook(__FILE__, 'activate_podcast_importer');
-register_deactivation_hook(__FILE__, 'deactivate_podcast_importer');
+    /**
+     * URL to this plugin's directory.
+     *
+     * @type string
+     * @status Core
+     */
+    public static $plugin_url;
 
+    /**
+     * Path to this plugin's directory.
+     *
+     * @type string
+     * @status Core
+     */
+    public static $plugin_path;
 
-/**
- * Allow iframes in generated post content
- */
-function podcast_importer_allow_iframe($tags, $context)
-{
-    if ('post' === $context) {
-        $tags['iframe'] = array(
-            'src'             => true,
-            'height'          => true,
-            'width'           => true,
-            'style'           => true,
-            'frameborder'     => true,
-            'allowfullscreen' => true,
-            'scrolling'       => true,
-            'seamless'        => true,
-        );
+    /**
+     * Path to this plugin's directory.
+     *
+     * @type string
+     * @status Core
+     */
+    public static $plugin_version;
+
+    /**
+     * get Plugin Basename
+     *
+     * @var string
+     */
+    public static $plugin_basename;
+
+    /**
+     * Plugin instance.
+     *
+     * @see get_instance()
+     * @status Core
+     */
+    protected static $_instance = null;
+
+    /**
+     * Access this plugin’s working instance
+     *
+     * @wp-hook plugins_loaded
+     * @return  object of this class
+     * @since   2012.09.13
+     */
+    public static function instance()
+    {
+        null === self::$_instance and self::$_instance = new self;
+        return self::$_instance;
     }
-    return $tags;
+
+    /**
+     * WP_PODCAST_IMPORTER constructor.
+     */
+    public function __construct()
+    {
+
+        /*
+         * Check Require Php Version
+         */
+        if (version_compare(PHP_VERSION, $this->min_php, '<=')) {
+            add_action('admin_notices', array($this, 'php_version_notice'));
+            return;
+        }
+
+        /*
+         * Define Variable
+         */
+        $this->define_constants();
+
+        /*
+         * include files
+         */
+        $this->includes();
+
+        /*
+         * init Wordpress hook
+         */
+        $this->init_hooks();
+
+        /*
+         * Plugin Loaded Action
+         */
+        do_action('wp_podcast_importer_loaded');
+    }
+
+    /**
+     * Define Constant
+     */
+    public function define_constants()
+    {
+
+        /*
+         * Get Plugin Data
+         */
+        if (!function_exists('get_plugin_data')) {
+            require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+        }
+        $plugin_data = get_plugin_data(__FILE__);
+
+        /*
+         * Set Plugin Version
+         */
+        self::$plugin_version = $plugin_data['Version'];
+
+        /*
+         * Set Plugin Url
+         */
+        self::$plugin_url = plugins_url('', __FILE__);
+
+        /*
+         * Set Plugin Path
+         */
+        self::$plugin_path = plugin_dir_path(__FILE__);
+
+        /*
+         * Set Plugin BaseName
+         */
+        self::$plugin_basename = plugin_basename(__FILE__);
+    }
+
+    /**
+     * include Plugin Require File
+     */
+    public function includes()
+    {
+        /*
+         * autoload plugin files
+         */
+        include_once dirname(__FILE__) . '/inc/config/i18n.php';
+        include_once dirname(__FILE__) . '/inc/config/install.php';
+        include_once dirname(__FILE__) . '/inc/config/uninstall.php';
+        include_once dirname(__FILE__) . '/inc/helper.php';
+        include_once dirname(__FILE__) . '/inc/admin/admin.php';
+        include_once dirname(__FILE__) . '/inc/process.php';
+    }
+
+    /**
+     * Used for regular plugin work.
+     *
+     * @wp-hook init Hook
+     * @return  void
+     */
+    public function init_hooks()
+    {
+
+        /*
+         * Activation Plugin Hook
+         */
+        register_activation_hook(__FILE__, array('\WP_PODCAST_IMPORTER\config\install', 'run_install'));
+
+        /*
+         * Uninstall Plugin Hook
+         */
+        register_deactivation_hook(__FILE__, array('\WP_PODCAST_IMPORTER\config\uninstall', 'run_uninstall'));
+
+        /*
+         * Load i18n
+         */
+        if (self::$use_i18n === true) {
+            new \WP_PODCAST_IMPORTER\config\i18n('podcast-importer');
+        }
+    }
+
+    /**
+     * Show notice about PHP version
+     *
+     * @return void
+     */
+    function php_version_notice()
+    {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        $error = __('Your installed PHP Version is: ', 'podcast-importer') . PHP_VERSION . '. ';
+        $error .= __('The <strong>WP PodCast Importer</strong> plugin requires PHP version <strong>', 'podcast-importer') . $this->min_php . __('</strong> or greater.', 'podcast-importer');
+        ?>
+        <div class="error">
+            <p><?php printf($error); ?></p>
+        </div>
+        <?php
+    }
+
+    /**
+     * Write WordPress Log
+     *
+     * @param $log
+     */
+    public static function log($log)
+    {
+        if (true === WP_DEBUG) {
+            if (is_array($log) || is_object($log)) {
+                error_log(print_r($log, true));
+            } else {
+                error_log($log);
+            }
+        }
+    }
 }
 
-add_filter('wp_kses_allowed_html', 'podcast_importer_allow_iframe', 10, 2);
-
 /**
- * Add oEmbed providers
- */
-function podcast_importer_oembed_providers($providers)
-{
-    $providers['#https?://(.+).podbean.com/e/.+#i'] = array('https://api.podbean.com/v1/oembed', true);
-    return $providers;
-}
-
-add_filter('oembed_providers', 'podcast_importer_oembed_providers');
-
-/* Add 'Setting' link to plugins page */
-function podcast_importer_add_settings_link($links)
-{
-    $settings_link = '<a href="tools.php?page=podcast-imprter">' . esc_attr__('Settings', 'podcast-importer') . '</a>';
-    array_push($links, $settings_link);
-    return $links;
-}
-
-$plugin = plugin_basename(__FILE__);
-add_filter("plugin_action_links_$plugin", 'podcast_importer_add_settings_link');
-
-
-/**
- * The core plugin class that is used to define internationalization,
- * admin-specific hooks
- */
-require plugin_dir_path(__FILE__) . 'class-podcast-importer.php';
-
-/**
- * Begins execution of the plugin.
+ * Main instance of WP_Plugin.
  *
- * Since everything within the plugin is registered via hooks,
- * then kicking off the plugin from this point in the file does
- * not affect the page life cycle.
- *
- * @since    1.0.0
+ * @since  1.1.0
  */
-function podcast_importer()
+function wp_podcast_importer()
 {
-    new Podcast_Importer();
+    return WP_PODCAST_IMPORTER::instance();
 }
 
-podcast_importer();
+// Global for backwards compatibility.
+$GLOBALS['podcast-importer'] = wp_podcast_importer();
