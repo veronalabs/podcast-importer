@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Podcast Importer
  * Description:       A simple podcast import plugin with feed.
- * Version:           1.0.0
+ * Version:           2.0
  * Author:            VeronaLabs
  * Author URI:        https://veronalabs.com
  * License:           GPL-2.0+
